@@ -1,0 +1,21 @@
+/* ====================== FIRMAS DOS COLUMNAS ====================== */
+#firmas-wrapper {
+    margin-top: 80px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 40px;
+    padding: 20px;
+}
+
+.firma-bloque {
+    text-align: center;
+    width: 40%;
+}
+
+.firma-linea {
+    width: 100%;
+    height: 1px;
+    background: black;
+    margin-bottom: 6px;
+}

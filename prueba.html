@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#003366">
+
+<title>Reporte de Hallazgos</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+
+<style>
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+#invoice {
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+}
+button {
+    padding: 10px 20px;
+    background: #003366;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+button:hover { background: #0055aa; }
+
+input[type="text"] {
+    padding: 8px;
+    width: 300px;
+    border: 1px solid #888;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+input[type="file"] { margin-bottom: 10px; }
+
+.seccion { margin-bottom: 50px; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+
+
+td, th {
+    padding: 6px;
+    border: 1px solid #ccc;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 12px;
+}
+th {
+    background: #003366;
+    color: white;
+}
+
+.eliminar-btn {
+    background: red;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+    font-size: 12px;
+}
+
+#imageModal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.85);
+    justify-content: center;
+    align-items: center;
+}
+#imageModal img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 10px;
+}
+#closeModal {
+    position: fixed;
+    top: 25px;
+    right: 30px;
+    color: white;
+    font-size: 40px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.pdf-seccion {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 25px;
+}
+
+.pdf-tabla {
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+/* ================= SECCIONES ================= */
+.pdf-seccion > h2 {
+    font-size: 14px;
+    font-weight: bold;
+    color: #003366;
+    text-transform: uppercase;
+    border-bottom: 1px solid #003366;
+    padding-bottom: 4px;
+    margin-top: 28px;
+    margin-bottom: 10px;
+}
+
+.pdf-seccion h3 {
+    font-size: 12px;
+    font-weight: bold;
+    color: #000;
+    margin-top: 10px;
+    margin-bottom: 6px;
+}
+
+.pdf-seccion h4 {
+    font-size: 11px;
+    font-weight: bold;
+    color: #444;
+    margin: 8px 0 4px;
+}
+
+
+/* Evitar que se corte información importante */
+.pdf-seccion,
+.pdf-seccion > div,
+table,
+tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+}
+
+.pdf-seccion table td img {
+    width: 100%;
+    height: auto;
+    max-height: 120px;
+    object-fit: contain;
+    display: block;
+    margin: auto;
+}
+
+
+.pdf-seccion table td {
+    vertical-align: middle;
+}
+
+/* Columna de imagen con ancho controlado */
+.pdf-seccion table th:nth-child(3),
+.pdf-seccion table td:nth-child(3) {
+    width: 200px;
+    max-width: 220px;
+}
+
+.dashboard {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+}
+
+.dashboard h2 {
+    margin-top: 0;
+    text-align: center;
+    color: #003366;
+    margin-bottom: 20px;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+}
+
+.dashboard-grid button {
+    height: 60px;
+    background: #003366;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.dashboard-grid button:hover {
+    background: #0055aa;
+    transform: translateY(-3px);
+}
+
+.seccion {
+    display: none;
+}
+
+.app-header {
+    background: white;
+    display: grid;
+    grid-template-columns: 120px 1fr 120px;
+    align-items: center;
+    padding: 15px 25px;
+    margin-bottom: 25px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+}
+
+.app-header img {
+    max-width: 100px;
+    max-height: 80px;
+    object-fit: contain;
+}
+
+.header-text {
+    text-align: center;
+}
+
+.header-text h1 {
+    margin: 0;
+    font-size: 20px;
+    color: #003366;
+    text-transform: uppercase;
+}
+
+.header-text span {
+    font-size: 13px;
+    color: #555;
+}
+
+/* ================== RESPONSIVE ================== */
+
+/* Tablets y teléfonos */
+@media (max-width: 768px) {
+
+    body {
+        padding: 10px;
+    }
+
+    #invoice {
+        padding: 15px;
+    }
+
+    .app-header {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .app-header img {
+        margin: auto;
+        max-width: 80px;
+        max-height: 60px;
+    }
+
+    .header-text h1 {
+        font-size: 16px;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    button {
+        width: 100%;
+        font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="file"] {
+        width: 100%;
+    }
+
+    table {
+        font-size: 11px;
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    table img {
+        max-height: 90px;
+    }
+}
+
+/* Teléfonos pequeños */
+@media (max-width: 480px) {
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .header-text h1 {
+        font-size: 14px;
+    }
+
+    .header-text span {
+        font-size: 11px;
+    }
+
+    th, td {
+        padding: 4px;
+        font-size: 10px;
+    }
+}
+
+
+</style>
+</head>
+
+<body>
+
+    <script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log('Service Worker registrado'))
+        .catch(err => console.error('SW error', err));
+}
+</script>
+
+
+<div class="app-header">
+    <img src="AFAC.jpeg" alt="AFAC">
+    <div class="header-text">
+        <h1>Reporte General de Inspección</h1>
+        <span>Agencia Federal de Aviación Civil</span>
+    </div>
+    <img src="SCIT.jpeg" alt="Comunicaciones">
+</div>
+
+<button onclick="limpiarTodo()" style="background:#8B0000;">
+    Limpiar todo
+</button>
+
+<button onclick="descargar_pdf()">Descargar PDF</button>
+
+<div class="dashboard">
+    <h2>Secciones del Reporte</h2>
+
+    <div class="dashboard-grid">
+        <button onclick="mostrarSeccion('pistas')">Pistas</button>
+        <button onclick="mostrarSeccion('rodajes')">Señalamiento</button>
+<button onclick="mostrarSeccion('franjas')">Franjas</button>
+<button onclick="mostrarSeccion('iluminacion')">Iluminación</button>
+<button onclick="mostrarSeccion('EdificioTerminal')">Edificio Terminal</button>
+        <button onclick="mostrarSeccion('Plataformas')">Plataformas</button>
+        <button onclick="mostrarSeccion('callesderodaje')">Calles de Rodaje</button>
+        <button onclick="mostrarSeccion('caminodeacceso')">Camino de Acceso</button>
+        <button onclick="mostrarSeccion('cercadoperimetral')">Cercado</button>
+        <button onclick="mostrarSeccion('estacionamientodevehiculos')">Estacionamiento</button>
+        <button onclick="mostrarSeccion('calidad')">Calidad del Servicio</button>
+        <button onclick="mostrarSeccion('subestacionesGrupo')">Subestaciones</button>
+        <button onclick="mostrarSeccion('equiposGrupo')">Equipos Especiales</button>
+    </div>
+</div>
+
+
+<div id="invoice">
+
+<!-- PISTAS -->
+<div class="seccion" id="sec-pistas">
+    <button onclick="volverDashboard()" style="margin-bottom:15px;">
+    ⬅ Volver al menú
+</button>
+
+    <h2>Pistas</h2>
+    <div>
+        <input type="checkbox"><label>Grietas</label>
+        <input type="checkbox"><label>Baches</label>
+        <input type="checkbox"><label>Hundimientos</label>
+        <input type="checkbox"><label>Desprendimientos</label>
+        <input type="checkbox"><label>Contaminación por caucho</label>
+        <input type="checkbox"><label>Corrimientos</label>
+        <input type="checkbox"><label>Erosión</label>
+    </div>
+
+    <input type="text" id="inputBoxpistas" placeholder="Escribe un hallazgo de Pistas">
+    <input type="file" id="imgInputpistas" accept="image/*">
+    <button onclick="addHallazgo('pistas')">Agregar</button>
+    <div id="listContainerpistas"></div>
+</div>
+
+<!-- SEÑALAMIENTO -->
+<div class="seccion" id="sec-rodajes">
+    <button onclick="volverDashboard()" style="margin-bottom:15px;">
+    ⬅ Volver al menú
+</button>
+
+    <h2>Señalamiento</h2>
+    <div>
+        <input type="checkbox"><label>Designadores</label>
+        <input type="checkbox"><label>Eje</label>
+        <input type="checkbox"><label>Letreros</label>
+        <input type="checkbox"><label>Área de contacto</label>
+        <input type="checkbox"><label>Franjas</label>
+        <input type="checkbox"><label>Umbral</label>
+        <input type="checkbox"><label>Radios de giro</label>
+    </div>
+
+    <input type="text" id="inputBoxrodajes" placeholder="Escribe un hallazgo de Señalamiento">
+    <input type="file" id="imgInputrodajes" accept="image/*">
+    <button onclick="addHallazgo('rodajes')">Agregar</button>
+    <div id="listContainerrodajes"></div>
+</div>
+
+<!-- FRANJAS -->
+<div class="seccion" id="sec-franjas">
+    <button onclick="volverDashboard()" style="margin-bottom:15px;">
+    ⬅ Volver al menú
+</button>
+
+    <h2>Franjas de Seguridad</h2>
+    <div>
+        <input type="checkbox"><label>Hierba</label>
+        <input type="checkbox"><label>Obstáculos</label>
+        <input type="checkbox"><label>Drenaje</label>
+        <input type="checkbox"><label>Pendiente transversal</label>
+        <input type="checkbox"><label>Pendiente longitudinal</label>
+        <input type="checkbox"><label>Carpetas</label>
+        <input type="checkbox"><label>Zanjas</label>
+    </div>
+
+    <input type="text" id="inputBoxfranjas" placeholder="Escribe un hallazgo de Franjas">
+    <input type="file" id="imgInputfranjas" accept="image/*">
+    <button onclick="addHallazgo('franjas')">Agregar</button>
+    <div id="listContainerfranjas"></div>
+</div>
+
+<!-- ILUMINACIÓN -->
+<div class="seccion" id="sec-iluminacion">
+    <button onclick="volverDashboard()" style="margin-bottom:15px;">
+    ⬅ Volver al menú
+</button>
+
+    <h2>Iluminación</h2>
+    <div>
+        <input type="checkbox"><label>Umbral</label>
+        <input type="checkbox"><label>Barra de ala</label>
+        <input type="checkbox"><label>Borde rodaje</label>
+        <input type="checkbox"><label>Borde pista</label>
+        <input type="checkbox"><label>Eje pista</label>
+        <input type="checkbox"><label>Aproximación</label>
+        <input type="checkbox"><label>PAPIS</label>
+        <input type="checkbox"><label>Aprox elevadas</label>
+        <input type="checkbox"><label>Hierba</label>
+    </div>
+
+    <input type="text" id="inputBoxiluminacion" placeholder="Escribe un hallazgo de Iluminación">
+    <input type="file" id="imgInputiluminacion" accept="image/*">
+    <button onclick="addHallazgo('iluminacion')">Agregar</button>
+    <div id="listContaineriluminacion"></div>
+</div>
+
+<!-- EDIFICIOS TERMINALES -->
+<div class="seccion" id="sec-EdificioTerminal">
+    <button onclick="volverDashboard()" style="margin-bottom:15px;">
+    ⬅ Volver al menú
+</button>
+
+    <h2>Edificios Terminales</h2>
+    <div>
+        <input type="checkbox"><label>Vialidad exterior</label>
+        <input type="checkbox"><label>Aceras</label>
+        <input type="checkbox"><label>Zona de documentación</label>
+        <input type="checkbox"><label>Última sala de espera</label>
+        <input type="checkbox"><label>Llegadas</label>
+        <input type="checkbox"><label>Reclamo equipaje</label>
+        <input type="checkbox"><label>Sanitarios</label>
+        <input type="checkbox"><label>Limpieza</label>
+        <input type="checkbox"><label>Señalización</label>
+        <input type="checkbox"><label>Servicios públicos</label>
+        <input type="checkbox"><label>Áreas comerciales</label>
+        <input type="checkbox"><label>Azotea</label>
+        <input type="checkbox"><label>Apartarrayos</label>
+        <input type="checkbox"><label>Luces de obstrucción</label>
+        <input type="checkbox"><label>Cisterna</label>
+        <input type="checkbox"><label>Drenajes</label>
+        <input type="checkbox"><label>Accesibilidad PMR</label>
+    </div>
+
+    <input type="text" id="inputBoxEdificioTerminal" placeholder="Escribe un hallazgo">
+    <input type="file" id="imgInputEdificioTerminal" accept="image/*">
+    <button onclick="addHallazgo('EdificioTerminal')">Agregar</button>
+    <div id="listContainerEdificioTerminal"></div>
+</div>
+
+<!-- PLATAFORMAS -->
+<div class="seccion" id="sec-Plataformas">
+    <button onclick="volverDashboard()" style="margin-bottom:15px;">
+    ⬅ Volver al menú
+</button>
+
+    <h2>Plataformas</h2>
+    <div>
+        <input type="checkbox"><label>Posiciones simultáneas</label>
+        <input type="checkbox"><label>Pavimento</label>
+        <input type="checkbox"><label>Limpieza</label>
+        <input type="checkbox"><label>Drenaje</label>
+        <input type="checkbox"><label>Señalamiento</label>
+        <input type="checkbox"><label>Letreros</label>
+        <input type="checkbox"><label>Iluminación</label>
+        <input type="checkbox"><label>Tipo estacionamiento</label>
+        <input type="checkbox"><label>Tierras</label>
+        <input type="checkbox"><label>Servicios rampa</label>
+        <input type="checkbox"><label>Equipos rampa</label>
+        <input type="checkbox"><label>Ubicación hidrantes</label>
+    </div>
+
+    <input type="text" id="inputBoxPlataformas" placeholder="Escribe un hallazgo">
+    <input type="file" id="imgInputPlataformas" accept="image/*">
+    <button onclick="addHallazgo('Plataformas')">Agregar</button>
+    <div id="listContainerPlataformas"></div>
+</div>
+
+<!-- CALLES DE RODAJE -->
+<div class="seccion" id="sec-callesderodaje">
+    <button onclick="volverDashboard()" style="margin-bottom:15px;">
+    ⬅ Volver al menú
+</button>
+
+    <h2>Calles de Rodaje</h2>
+    <div>
+        <input type="checkbox"><label>Pavimento</label>
+        <input type="checkbox"><label>Limpieza</label>
+        <input type="checkbox"><label>Drenaje</label>
+        <input type="checkbox"><label>Señalamiento</label>
+        <input type="checkbox"><label>Letreros</label>
+        <input type="checkbox"><label>Luces de borde</label>
+        <input type="checkbox"><label>Márgenes</label>
+    </div>
+
+    <input type="text" id="inputBoxcallesderodaje" placeholder="Escribe un hallazgo">
+    <input type="file" id="imgInputcallesderodaje" accept="image/*">
+    <button onclick="addHallazgo('callesderodaje')">Agregar</button>
+    <div id="listContainercallesderodaje"></div>
+</div>
+
+<!-- CAMINOS DE ACCESO -->
+<div class="seccion" id="sec-caminodeacceso">
+    <button onclick="volverDashboard()" style="margin-bottom:15px;">
+    ⬅ Volver al menú
+</button>
+
+    <h2>Caminos de Acceso</h2>
+    <div>
+        <input type="checkbox"><label>Pavimento</label>
+        <input type="checkbox"><label>Limpieza</label>
+        <input type="checkbox"><label>Señalización</label>
+        <input type="checkbox"><label>Acotamiento</label>
+        <input type="checkbox"><label>Drenaje</label>
+        <input type="checkbox"><label>Número de vías</label>
+    </div>
+
+    <input type="text" id="inputBoxcaminodeacceso" placeholder="Escribe un hallazgo">
+    <input type="file" id="imgInputcaminodeacceso" accept="image/*">
+    <button onclick="addHallazgo('caminodeacceso')">Agregar</button>
+    <div id="listContainercaminodeacceso"></div>
+</div>
+
+<!-- CERCADO PERIMETRAL -->
+<div class="seccion" id="sec-cercadoperimetral">
+    <button onclick="volverDashboard()" style="margin-bottom:15px;">
+    ⬅ Volver al menú
+</button>
+
+    <h2>Cercado Perimetral</h2>
+    <div>
+        <input type="checkbox"><label>Tipo cercado</label>
+        <input type="checkbox"><label>Altura</label>
+        <input type="checkbox"><label>Camino Perimetral</label>
+        <input type="checkbox"><label>Recorridos</label>
+    </div>
+
+    <input type="text" id="inputBoxcercadoperimetral" placeholder="Escribe un hallazgo">
+    <input type="file" id="imgInputcercadoperimetral" accept="image/*">
+    <button onclick="addHallazgo('cercadoperimetral')">Agregar</button>
+    <div id="listContainercercadoperimetral"></div>
+</div>
+
+<!-- ESTACIONAMIENTO DE VEHÍCULOS -->
+<div class="seccion" id="sec-estacionamientodevehiculos">
+    <button onclick="volverDashboard()" style="margin-bottom:15px;">
+    ⬅ Volver al menú
+</button>
+
+    <h2>Estacionamiento de Vehículos</h2>
+    <div>
+        <input type="checkbox"><label>Pavimento</label>
+        <input type="checkbox"><label>Limpieza</label>
+        <input type="checkbox"><label>Iluminación</label>
+        <input type="checkbox"><label>Señalización</label>
+        <input type="checkbox"><label>Cajones y áreas UNES</label>
+        <input type="checkbox"><label>Acceso/salida</label>
+    </div>
+
+    <input type="text" id="inputBoxestacionamientodevehiculos" placeholder="Escribe un hallazgo">
+    <input type="file" id="imgInputestacionamientodevehiculos" accept="image/*">
+    <button onclick="addHallazgo('estacionamientodevehiculos')">Agregar</button>
+    <div id="listContainerestacionamientodevehiculos"></div>
+</div>
+
+<!-- CALIDAD EN EL SERVICIO -->
+<div class="seccion" id="sec-calidad">
+    <button onclick="volverDashboard()" style="margin-bottom:15px;">
+    ⬅ Volver al menú
+</button>
+
+    <h2>Calidad en el Servicio</h2>
+    <div>
+        <input type="checkbox"><label>Áreas disponibles</label>
+        <input type="checkbox"><label>Mostradores</label>
+        <input type="checkbox"><label>Escaleras/elevadores</label>
+        <input type="checkbox"><label>Bandas de reclamo</label>
+        <input type="checkbox"><label>Dependencias</label>
+        <input type="checkbox"><label>Telefonía</label>
+        <input type="checkbox"><label>Información vuelos</label>
+        <input type="checkbox"><label>Transporte terrestre</label>
+        <input type="checkbox"><label>Capacidad servicio pasajero</label>
+        <input type="checkbox"><label>Capacidad plataformas</label>
+        <input type="checkbox"><label>Capacidad calles de rodaje</label>
+    </div>
+
+    <input type="text" id="inputBoxcalidad" placeholder="Escribe un hallazgo">
+    <input type="file" id="imgInputcalidad" accept="image/*">
+    <button onclick="addHallazgo('calidad')">Agregar</button>
+    <div id="listContainercalidad"></div>
+</div>
+
+<!-- SUBESTACIONES (AGRUPADA) -->
+<div class="seccion" id="sec-subestacionesGrupo">
+    <button onclick="volverDashboard()" style="margin-bottom:15px;">
+    ⬅ Volver al menú
+</button>
+
+    <h2>Subestaciones</h2>
+
+    <h3>Subestaciones de Acometidas</h3>
+    <div id="grupoAcometidas">
+        <input type="checkbox"><label>Voltaje acometida</label>
+        <input type="checkbox"><label>Tipo subestación</label>
+        <input type="checkbox"><label>Voltaje salida</label>
+        <input type="checkbox"><label>Transformadores</label>
+        <input type="checkbox"><label>Limpieza</label>
+        <input type="checkbox"><label>Seguridad</label>
+    </div>
+
+    <input type="text" id="inputBoxsubestaciones" placeholder="Escribe un hallazgo">
+    <input type="file" id="imgInputsubestaciones" accept="image/*">
+    <button onclick="addHallazgo('subestaciones')">Agregar</button>
+    <div id="listContainersubestaciones"></div>
+
+    <hr>
+
+    <h3>Subestaciones de Edificio</h3>
+    <div id="grupoEdificio">
+        <input type="checkbox"><label>Ubicación</label>
+        <input type="checkbox"><label>Dimensiones</label>
+        <input type="checkbox"><label>Distancias seguridad</label>
+        <input type="checkbox"><label>Transformadores</label>
+        <input type="checkbox"><label>Planta emergencia</label>
+        <input type="checkbox"><label>Zonas emergencia</label>
+        <input type="checkbox"><label>Seguridad industrial</label>
+        <input type="checkbox"><label>Comunicaciones</label>
+        <input type="checkbox"><label>Mantenimiento</label>
+        <input type="checkbox"><label>Manuales</label>
+    </div>
+
+    <input type="text" id="inputBoxsubestaciones1" placeholder="Escribe un hallazgo">
+    <input type="file" id="imgInputsubestaciones1" accept="image/*">
+    <button onclick="addHallazgo('subestaciones1')">Agregar</button>
+    <div id="listContainersubestaciones1"></div>
+
+    <hr>
+
+    <h3>Subestaciones de Ayudas Visuales</h3>
+    <div id="grupoAyudasVisuales">
+        <input type="checkbox"><label>Ubicación</label>
+        <input type="checkbox"><label>Dimensiones</label>
+        <input type="checkbox"><label>Distancias de seguridad de equipos</label>
+        <input type="checkbox"><label>Estado de tableros, gabinetes y conexiones</label>
+        <input type="checkbox"><label>Estado de Transformadores</label>
+        <input type="checkbox"><label>Estado de reguladores de corriente constante</label>
+        <input type="checkbox"><label>Condiciones de operación de la planta de emergencia</label>
+        <input type="checkbox"><label>Equipos de seguridad industrial</label>
+        <input type="checkbox"><label>Comunicaciones interiores</label>
+        <input type="checkbox"><label>Transferencia a y desde torre de control</label>
+        <input type="checkbox"><label>Limpieza y estado general de mantenimiento</label>
+        <input type="checkbox"><label>Manuales de mantenimiento</label>
+    </div>
+
+    <input type="text" id="inputBoxsubestaciones2" placeholder="Escribe un hallazgo">
+    <input type="file" id="imgInputsubestaciones2" accept="image/*">
+    <button onclick="addHallazgo('subestaciones2')">Agregar</button>
+    <div id="listContainersubestaciones2"></div>
+
+    <hr>
+
+    <h3>Otras Subestaciones</h3>
+    <input type="text" id="inputBoxsubestaciones3" placeholder="Escribe un hallazgo">
+    <input type="file" id="imgInputsubestaciones3" accept="image/*">
+    <button onclick="addHallazgo('subestaciones3')">Agregar</button>
+    <div id="listContainersubestaciones3"></div>
+    </div>
+</div>
+
+<!-- EQUIPOS (AGRUPADA) -->
+<div class="seccion" id="sec-equiposGrupo">
+    <button onclick="volverDashboard()" style="margin-bottom:15px;">
+    ⬅ Volver al menú
+</button>
+
+    <h2>Equipos Especiales</h2>
+
+    <h3>Aire Acondicionado</h3>
+    <div id="grupoAire">
+        <input type="checkbox"><label>Ubicación de compresores</label>
+        <input type="checkbox"><label>Ubicación de enfriadores</label>
+        <input type="checkbox"><label>Estado general de equipos</label>
+        <input type="checkbox"><label>Ductos y rejillas de inyección</label>
+        <input type="checkbox"><label>Ductos y rejillas de retorno</label>
+        <input type="checkbox"><label>Controles de temperatura</label>
+        <input type="checkbox"><label>Manuales de mantenimiento</label>
+    </div>
+
+    <input type="text" id="inputBoxequipos0" placeholder="Escribe un hallazgo">
+    <input type="file" id="imgInputequipos0" accept="image/*">
+    <button onclick="addHallazgo('equipos0')">Agregar</button>
+    <div id="listContainerequipos0"></div>
+
+    <hr>
+
+    <h3>Sistemas Hidroneumáticos</h3>
+    <div id="grupoSistemas">
+        <input type="checkbox"><label>Ubicación</label>
+        <input type="checkbox"><label>Tipo de controles</label>
+        <input type="checkbox"><label>Tanque de alimentación</label>
+        <input type="checkbox"><label>Estado general de equipos</label>
+    </div>
+
+    <input type="text" id="inputBoxequipos1" placeholder="Escribe un hallazgo">
+    <input type="file" id="imgInputequipos1" accept="image/*">
+    <button onclick="addHallazgo('equipos1')">Agregar</button>
+    <div id="listContainerequipos1"></div>
+
+    <hr>
+
+    <h3>Alimentación de Agua</h3>
+    <div id="grupoAgua">
+        <input type="checkbox"><label>Sistema de abastacimiento</label>
+        <input type="checkbox"><label>Cisternas</label>
+        <input type="checkbox"><label>Condiciones operativas del sistema</label>
+    </div>
+
+    <input type="text" id="inputBoxequipos2" placeholder="Escribe un hallazgo">
+    <input type="file" id="imgInputequipos2" accept="image/*">
+    <button onclick="addHallazgo('equipos2')">Agregar</button>
+    <div id="listContainerequipos2"></div>
+
+    <hr>
+
+    <h3>Otras</h3>
+    <input type="text" id="inputBoxequipos3" placeholder="Escribe un hallazgo">
+    <input type="file" id="imgInputequipos3" accept="image/*">
+    <button onclick="addHallazgo('equipos3')">Agregar</button>
+    <div id="listContainerequipos3"></div>
+</div>
+
+
+</div> <!-- cierre de invoice -->
+
+<!-- MODAL -->
+<div id="imageModal">
+    <span id="closeModal">✖</span>
+    <img id="modalImg">
+</div>
+<script>
+// Mostrar/Ocultar secciones
+function mostrarReporte() {
+    const opcion = document.getElementById("menuReportes").value;
+    document.querySelectorAll(".seccion").forEach(sec => sec.style.display = "none");
+    if (opcion === "todos") {
+        document.querySelectorAll(".seccion").forEach(sec => sec.style.display = "block");
+    } else {
+        document.getElementById("sec-" + opcion).style.display = "block";
+    }
+}
+
+// Agregar hallazgo
+function addHallazgo(sufijo) {
+    const input = document.getElementById("inputBox" + sufijo);
+    const file = document.getElementById("imgInput" + sufijo);
+    const cont = document.getElementById("listContainer" + sufijo);
+
+    if (!input || !cont) return;
+    const texto = input.value.trim();
+    if (!texto) return;
+
+    let imagenFinal = null;
+    if (file && file.files.length > 0) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imagenFinal = e.target.result;
+            insertarFila();
+        };
+        reader.readAsDataURL(file.files[0]);
+    } else {
+        insertarFila();
+    }
+
+    function insertarFila() {
+        let tabla = document.getElementById("tabla_" + sufijo);
+        if (!tabla) {
+            tabla = document.createElement("table");
+            tabla.id = "tabla_" + sufijo;
+            tabla.innerHTML = `
+                <tr>
+                    <th>No.</th>
+                    <th>Descripción</th>
+                    <th>Imagen</th>
+                    <th>Eliminar</th>
+                </tr>`;
+            const wrapper = document.createElement("div");
+wrapper.className = "table-wrapper";
+wrapper.appendChild(tabla);
+cont.appendChild(wrapper);
+
+        }
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td class="num"></td>
+            <td>${texto}</td>
+            <td>${imagenFinal ? `<img src="${imagenFinal}" style="width:80px; cursor:pointer;" onclick="abrirModal(this.src)">` : "—"}</td>
+            <td><button class="eliminar-btn" onclick="eliminarFila(this,'${sufijo}')">X</button></td>
+        `;
+        tabla.appendChild(tr);
+        renumerar(sufijo);
+
+        input.value = "";
+        if (file) file.value = "";
+    }
+}
+
+// Renumerar filas
+function renumerar(seccion) {
+    const tabla = document.getElementById("tabla_" + seccion);
+    if (!tabla) return;
+    const filas = tabla.querySelectorAll("tr:not(:first-child)");
+    filas.forEach((fila, index) => {
+        fila.querySelector(".num").textContent = index + 1;
+    });
+}
+
+// Eliminar fila
+function eliminarFila(btn, seccion) {
+    const tr = btn.closest("tr");
+    tr.remove();
+    renumerar(seccion);
+}
+
+// Modal de imágenes
+function abrirModal(src) {
+    const modal = document.getElementById("imageModal");
+    const modalImg = document.getElementById("modalImg");
+    modal.style.display = "flex";
+    modalImg.src = src;
+}
+
+document.getElementById("closeModal").onclick = function() {
+    document.getElementById("imageModal").style.display = "none";
+};
+
+
+function generarChecklistVisual(items) {
+    const cont = document.createElement("div");
+
+    cont.style.display = "grid";
+    cont.style.gridTemplateColumns = "repeat(3, 1fr)";
+    cont.style.gap = "6px 20px";
+    cont.style.marginBottom = "12px";
+
+    items.forEach(texto => {
+        const item = document.createElement("div");
+        item.style.fontSize = "11px";
+        item.style.display = "flex";
+        item.style.alignItems = "center";
+
+        item.innerHTML = `
+            <span style="
+                width:10px;
+                height:10px;
+                border:1px solid #000;
+                margin-right:6px;
+                display:inline-block;
+            "></span>
+            ${texto}
+        `;
+
+        cont.appendChild(item);
+    });
+
+    return cont;
+}
+
+
+// Agregar secciones al PDF
+function agregarSeccionPDF(contenedor, titulo, seccionId) {
+    const secHtml = document.getElementById("sec-" + seccionId);
+    if (!secHtml) return;
+
+    const checklist = [...secHtml.querySelectorAll("input[type='checkbox']:checked")].map(ch => ch.nextElementSibling.textContent.trim());
+    const tabla = document.getElementById("tabla_" + seccionId);
+
+    if (!checklist.length && !tabla) return;
+
+    const bloque = document.createElement("div");
+    bloque.className = "pdf-seccion";
+    bloque.innerHTML += `<h2>${titulo}</h2>`;
+
+    if (checklist.length) {
+        bloque.innerHTML += `<h3>Checklist:</h3>`;
+        bloque.appendChild(generarChecklistVisual(checklist));
+    }
+    if (tabla) {
+        bloque.innerHTML += `<h3>Hallazgos:</h3>`;
+        bloque.appendChild(tabla.cloneNode(true));
+    }
+    contenedor.appendChild(bloque);
+}
+
+function agregarSeccionAgrupadaPDF(contenedor, tituloGeneral, grupos) {
+    let tieneContenido = false;
+
+    const bloquePrincipal = document.createElement("div");
+    bloquePrincipal.className = "pdf-seccion";
+
+    grupos.forEach(g => {
+        const secHtml = document.getElementById("sec-" + g.sec);
+        if (!secHtml) return;
+
+        let checklist = [];
+
+if (g.checks) {
+    checklist = [...secHtml.querySelectorAll(
+        g.checks + " input[type='checkbox']:checked"
+    )].map(ch => ch.nextElementSibling.textContent.trim());
+}
+
+
+        const tabla = document.getElementById("tabla_" + g.sufijo);
+
+        if (!checklist.length && !tabla) return;
+
+        // 👉 Si entra aquí, hay información real
+        tieneContenido = true;
+
+        const subBloque = document.createElement("div");
+        subBloque.style.marginBottom = "20px";
+        subBloque.style.pageBreakInside = "avoid";
+        subBloque.style.breakInside = "avoid";
+
+        subBloque.innerHTML += `<h3>${g.titulo}</h3>`;
+
+        if (checklist.length) {
+            subBloque.innerHTML += `<h4>Checklist:</h4>`;
+            subBloque.appendChild(generarChecklistVisual(checklist));
+        }
+
+        if (tabla) {
+            subBloque.innerHTML += `<h4>Hallazgos:</h4>`;
+            subBloque.appendChild(tabla.cloneNode(true));
+        }
+
+        bloquePrincipal.appendChild(subBloque);
+    });
+
+    // 👉 SOLO si hubo contenido se agrega el título general
+    if (tieneContenido) {
+        bloquePrincipal.prepend(
+            Object.assign(document.createElement("h2"), {
+                innerText: tituloGeneral
+            })
+        );
+        contenedor.appendChild(bloquePrincipal);
+    }
+}
+
+function generarFolioAFAC() {
+    const fecha = new Date();
+    const y = fecha.getFullYear();
+    const m = String(fecha.getMonth() + 1).padStart(2, "0");
+    const d = String(fecha.getDate()).padStart(2, "0");
+    const h = String(fecha.getHours()).padStart(2, "0");
+    const min = String(fecha.getMinutes()).padStart(2, "0");
+
+    return `AFAC-${y}${m}${d}-${h}${min}`;
+}
+
+
+
+function descargar_pdf() {
+    const contenido = document.createElement("div");
+
+ // ================= HEADER =================
+const header = document.createElement("div");
+header.style.display = "flex";
+header.style.alignItems = "center"; // alinea verticalmente
+header.style.justifyContent = "space-between"; // logos a los extremos
+header.style.marginBottom = "15px";
+header.style.width = "100%";
+
+// Logo izquierdo
+const imgRight = document.createElement("img");
+imgRight.src = "AFAC.jpeg";
+imgRight.style.height = "50px";
+imgRight.style.objectFit = "contain";
+
+// Logo derecho
+const imgLeft = document.createElement("img");
+imgLeft.src = "SCIT.jpeg";
+imgLeft.style.height = "50px";
+imgLeft.style.objectFit = "contain";
+imgLeft.style.maxWidth = "100px"; // nunca más de 100px de ancho
+
+
+// Texto central
+const textoHeader = document.createElement("div");
+textoHeader.style.textAlign = "center";
+textoHeader.style.flex = "1"; // ocupa todo el espacio central
+textoHeader.style.display = "flex";
+textoHeader.style.flexDirection = "column";
+textoHeader.style.justifyContent = "center"; // centra verticalmente el texto
+textoHeader.innerHTML = `
+    <div style="font-weight:bold; font-size:14px;">Agencia Federal de Aviación Civil</div>
+    <div style="font-size:12px;">Fecha y hora: ${new Date().toLocaleString("es-MX", {hour12:false})}</div>
+`;
+
+// Agregar elementos al header
+header.appendChild(imgLeft);
+header.appendChild(textoHeader);
+header.appendChild(imgRight);
+contenido.appendChild(header);
+
+    // ================= OBJETIVO =================
+    const objetivo = document.createElement("div");
+    objetivo.style.fontSize = "12px";
+    objetivo.style.marginBottom = "10px";
+    contenido.appendChild(objetivo);
+
+    // ================= CUERPO =================
+    const cuerpo = document.createElement("div");
+    cuerpo.className = "pdf-content";
+
+    [
+        "pistas","rodajes","franjas","iluminacion","EdificioTerminal",
+        "Plataformas","callesderodaje","caminodeacceso",
+        "cercadoperimetral","estacionamientodevehiculos","calidad"
+    ].forEach(s => agregarSeccionPDF(cuerpo, s.toUpperCase(), s));
+
+    agregarSeccionAgrupadaPDF(cuerpo, "Subestaciones", [
+        { sec: "subestacionesGrupo", sufijo: "subestaciones", titulo: "Subestaciones de Acometidas", checks: "#grupoAcometidas" },
+        { sec: "subestacionesGrupo", sufijo: "subestaciones1", titulo: "Subestaciones de Edificio", checks: "#grupoEdificio" },
+        { sec: "subestacionesGrupo", sufijo: "subestaciones2", titulo: "Subestaciones de Ayudas Visuales", checks: "#grupoAyudasVisuales" },
+        { sec: "subestacionesGrupo", sufijo: "subestaciones3", titulo: "Otras Subestaciones" }
+    ]);
+
+    agregarSeccionAgrupadaPDF(cuerpo, "Equipos Especiales", [
+        { sec: "equiposGrupo", sufijo: "equipos0", titulo: "Aire Acondicionado", checks: "#grupoAire" },
+        { sec: "equiposGrupo", sufijo: "equipos1", titulo: "Sistemas Hidroneumáticos", checks: "#grupoSistemas" },
+        { sec: "equiposGrupo", sufijo: "equipos2", titulo: "Alimentación de Agua", checks: "#grupoAgua" },
+        { sec: "equiposGrupo", sufijo: "equipos3", titulo: "Otras" }
+    ]);
+
+    if (!cuerpo.innerHTML.trim()) {
+        alert("No hay información para generar el PDF");
+        return;
+    }
+
+    contenido.appendChild(cuerpo);
+
+    // ================= IMÁGENES =================
+    contenido.querySelectorAll("td img").forEach(img => {
+        img.style.width = "100%";
+        img.style.maxHeight = "180px";
+        img.style.display = "block";
+        img.style.margin = "auto";
+        img.style.objectFit = "contain";
+    });
+
+    // ================= TABLAS =================
+    contenido.querySelectorAll("th").forEach(th => {
+        th.style.backgroundColor = "#0b3c5d";
+        th.style.color = "white";
+        th.style.fontWeight = "bold";
+        th.style.fontSize = "12px";
+    });
+
+    contenido.querySelectorAll("td").forEach(td => {
+        td.style.fontSize = "11px";
+        td.style.verticalAlign = "middle";
+    });
+
+    // ================= LIMPIEZA =================
+    contenido.querySelectorAll("img").forEach(img => {
+        img.removeAttribute("onclick");
+        img.style.cursor = "default";
+    });
+
+    contenido.querySelectorAll("table").forEach(tabla => {
+        const idx = Array.from(tabla.rows[0].cells)
+            .findIndex(th => th.innerText.toLowerCase() === "eliminar");
+        if (idx >= 0) {
+            for (let i = 0; i < tabla.rows.length; i++) {
+                tabla.rows[i].deleteCell(idx);
+            }
+        }
+    });
+
+    // ================= GENERACIÓN PDF =================
+    html2pdf()
+        .set({
+            margin: [25, 12, 25, 12],
+            filename: "Reporte_Inspeccion_AFAC.pdf",
+            image: { type: "jpeg", quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+        })
+        .from(contenido)
+        .toPdf()
+        .get("pdf")
+        .then(pdf => {
+            const total = pdf.internal.getNumberOfPages();
+            const ancho = pdf.internal.pageSize.getWidth();
+            const alto = pdf.internal.pageSize.getHeight();
+            const folio = generarFolioAFAC();
+            for (let i = 1; i <= total; i++) {
+                pdf.setPage(i);
+                // FOOTER
+                pdf.setDrawColor(180);
+                pdf.line(12, alto - 15, ancho - 12, alto - 15);
+                pdf.setFontSize(8);
+                pdf.text(`Folio: ${folio}`, 12, alto - 10);
+                pdf.text(`Página ${i} de ${total}`, ancho - 12, alto - 10, { align: "right" });
+                pdf.setFontSize(8);
+            }
+        })
+        .save();
+}
+
+
+
+function mostrarSeccion(seccion) {
+    document.querySelectorAll(".seccion").forEach(sec => {
+        sec.style.display = "none";
+    });
+
+    const destino = document.getElementById("sec-" + seccion);
+    if (!destino) return;
+
+    destino.style.display = "block";
+    destino.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function volverDashboard() {
+    document.querySelectorAll(".seccion").forEach(sec => {
+        sec.style.display = "none";
+    });
+    document.querySelector(".dashboard").scrollIntoView({
+        behavior: "smooth"
+    });
+}
+
+function limpiarTodo() {
+    if (!confirm("¿Deseas borrar toda la información capturada?")) return;
+
+    // 1. Limpiar inputs de texto
+    document.querySelectorAll("input[type='text']").forEach(input => {
+        input.value = "";
+    });
+
+    // 2. Limpiar inputs de archivos
+    document.querySelectorAll("input[type='file']").forEach(input => {
+        input.value = "";
+    });
+
+    // 3. Desmarcar todos los checkboxes
+    document.querySelectorAll("input[type='checkbox']").forEach(chk => {
+        chk.checked = false;
+    });
+
+    // 4. Eliminar todas las tablas de hallazgos
+    document.querySelectorAll("table[id^='tabla_']").forEach(tabla => {
+        tabla.remove();
+    });
+
+    // 5. Limpiar contenedores de listas (por seguridad)
+    document.querySelectorAll("[id^='listContainer']").forEach(cont => {
+        cont.innerHTML = "";
+    });
+
+    // 6. Ocultar todas las secciones
+    document.querySelectorAll(".seccion").forEach(sec => {
+        sec.style.display = "none";
+    });
+
+    // 7. Volver al dashboard
+    document.querySelector(".dashboard").scrollIntoView({
+        behavior: "smooth"
+    });
+
+    alert("Información borrada correctamente");
+}
+
+
+</script>
+
+</body>
+</html>
